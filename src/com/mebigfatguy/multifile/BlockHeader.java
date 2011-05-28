@@ -52,16 +52,16 @@ class BlockHeader {
 		return nextBlock;
 	}
 	
-	public void readBlock(RandomAccessFile file) throws IOException {
-		int ordType = file.readShort();
+	public void read(RandomAccessFile raFile) throws IOException {
+		int ordType = raFile.readShort();
 		type = BlockType.values()[ordType];
-		size = file.readInt();
-		nextBlock = file.readLong();
+		size = raFile.readInt();
+		nextBlock = raFile.readLong();
 	}
 	
-	public void writeBlock(RandomAccessFile file) throws IOException {
-		file.writeShort(type.ordinal());
-		file.writeInt(size);
-		file.writeLong(nextBlock);
+	public void write(RandomAccessFile raFile) throws IOException {
+		raFile.writeShort(type.ordinal());
+		raFile.writeInt(size);
+		raFile.writeLong(nextBlock);
 	}
 }

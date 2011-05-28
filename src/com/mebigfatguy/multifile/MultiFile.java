@@ -92,7 +92,7 @@ public class MultiFile {
 	void readDirectory() throws IOException {
 		raFile.seek(0);
 		BlockHeader header = new BlockHeader();
-		header.readBlock(raFile);
+		header.read(raFile);
 		while (header != null) {
 			int size = header.getSize();
 			while (size > 0) {
@@ -107,7 +107,7 @@ public class MultiFile {
 			if (next > 0) {
 				raFile.seek(next);
 				header = new BlockHeader();
-				header.readBlock(raFile);
+				header.read(raFile);
 			} else {
 				header = null;
 			}
@@ -117,7 +117,7 @@ public class MultiFile {
 	void writeEmptyDirectory() throws IOException {
 		BlockHeader bt = new BlockHeader(BlockType.DIRECTORY, 0, 0);
 		raFile.seek(0);
-		bt.writeBlock(raFile);
+		bt.write(raFile);
 		raFile.setLength(BLOCKSIZE);
 	}
 }
