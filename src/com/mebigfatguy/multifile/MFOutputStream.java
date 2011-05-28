@@ -34,8 +34,8 @@ class MFOutputStream extends OutputStream {
 		currentPageOffset = offset;
 		raFile.seek(startOffset);
 		currentOffset = startOffset;
-		BlockHeader header = new BlockHeader(raFile, BlockType.FILE, 0, 0);
-		header.writeBlock();
+		BlockHeader header = new BlockHeader(BlockType.FILE, 0, 0);
+		header.writeBlock(raFile);
 		currentOffset = raFile.getFilePointer();
 		if (currentOffset == raFile.length()) {
 			raFile.setLength(startOffset + MultiFile.BLOCKSIZE);

@@ -21,21 +21,20 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 class BlockHeader {
-	private RandomAccessFile raFile;
+	
+	public static final int BLOCKHEADERSIZE = 14;
+	
 	private BlockType type;
 	private int size;
 	private long nextBlock;
 	
-	public BlockHeader(RandomAccessFile file) throws IOException {
-		raFile = file;
-		int blockType = raFile.readShort();
-		type = BlockType.values()[blockType];
-		size = raFile.readInt();
-		nextBlock = raFile.readLong();
+	public BlockHeader() {
+		type = BlockType.FREE;
+		size = 0;
+		nextBlock = 0;
 	}
 	
-	public BlockHeader(RandomAccessFile file, BlockType blockType, int blockSize, long nextBlockOffset) {
-		raFile = file;
+	public BlockHeader(BlockType blockType, int blockSize, long nextBlockOffset) {
 		type = blockType;
 		size = blockSize;
 		nextBlock = nextBlockOffset;
@@ -53,9 +52,16 @@ class BlockHeader {
 		return nextBlock;
 	}
 	
-	public void writeBlock() throws IOException {
-		raFile.writeShort(type.ordinal());
-		raFile.writeInt(size);
-		raFile.writeLong(nextBlock);
+	public void readBlock(RandomAccessFile file) throws IOException {
+		int ordType = file.readShort();
+		type = BlockType.values()[ordType];
+		size = file.readInt();
+		nextBlock = file.readLong();
+	}
+	
+	public void writeBlock(RandomAccessFile file) throws IOException {
+		file.writeShort(type.ordinal());
+		file.writeInt(size);
+		file.writeLong(nextBlock);
 	}
 }
