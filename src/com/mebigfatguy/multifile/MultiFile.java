@@ -30,7 +30,6 @@ import java.util.Map;
 public class MultiFile {
 	static final int BLOCKSIZE = 512;
 	
-	private File parentFile;
 	RandomAccessFile raFile;
 	Map<String, Long> fileOffsets = new HashMap<String, Long>();
 	
@@ -39,7 +38,6 @@ public class MultiFile {
 	}
 	
 	public MultiFile(File file) throws IOException {
-		parentFile = file;
 		raFile = new RandomAccessFile(file, "rw");
 		if (raFile.length() > 0) {
 			readDirectory();
