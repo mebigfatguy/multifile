@@ -72,4 +72,8 @@ class BlockHeader {
 		raFile.writeInt(size);
 		raFile.writeLong(nextBlock);
 	}
+	
+	public String toString() {
+		return "BlockHeader[TYPE: " + type.name() + " SIZE: " + size + " NEXT: " + nextBlock + "]";
+	}
 }
