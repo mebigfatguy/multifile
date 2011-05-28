@@ -25,21 +25,14 @@ class MFOutputStream extends OutputStream {
 
 	private RandomAccessFile raFile;
 	private long startOffset;
-	private long currentPageOffset;
-	private long currentOffset;
+	private long currentBlockOffset;
 	
 	public MFOutputStream(RandomAccessFile file, long offset) throws IOException {
 		raFile = file;
 		startOffset = offset;
-		currentPageOffset = offset;
-		raFile.seek(startOffset);
-		currentOffset = startOffset;
-		BlockHeader header = new BlockHeader(BlockType.FILE, 0, 0);
-		header.write(raFile);
-		currentOffset = raFile.getFilePointer();
-		if (currentOffset == raFile.length()) {
-			raFile.setLength(startOffset + MultiFile.BLOCKSIZE);
-		}
+		currentBlockOffset = offset;
+		FileBlock block = new FileBlock(startOffset);
+		block.write(raFile);
 	}
 	
 	@Override
@@ -48,7 +41,7 @@ class MFOutputStream extends OutputStream {
 			throw new IOException("Stream already closed");
 		}
 		
-		throw new UnsupportedOperationException();
+		write(new byte[] { (byte) b }, 0, 1);
 	}
 
 	@Override
@@ -57,7 +50,7 @@ class MFOutputStream extends OutputStream {
 			throw new IOException("Stream already closed");
 		}
 		
-		throw new UnsupportedOperationException();
+		write(b, 0, b.length);
 	}
 
 	@Override
@@ -66,14 +59,21 @@ class MFOutputStream extends OutputStream {
 			throw new IOException("Stream already closed");
 		}
 		
-		long endBlock = ((currentOffset + MultiFile.BLOCKSIZE) / MultiFile.BLOCKSIZE) * MultiFile.BLOCKSIZE;
-		int length = (int) (endBlock - currentOffset);
-		
-		int writeLen = Math.min(length, len);
-		raFile.seek(currentOffset);
-		raFile.write(b, off, writeLen);
+		FileBlock block = new FileBlock(currentBlockOffset);
+		block.read(raFile);
+		int writeLen = block.writeStream(raFile, b, off, len);
+		off += writeLen;
 		len -= writeLen;
-		currentOffset += writeLen;
+		
+		while (len > 0) {
+			currentBlockOffset = raFile.getFilePointer();
+			block.setNextOffset(currentBlockOffset);
+			block.write(raFile);
+			FileBlock newBlock = new FileBlock(raFile.getFilePointer());
+			writeLen = newBlock.writeStream(raFile, b, off, len);
+			off += writeLen;
+			len -= writeLen;
+		}
 	}
 
 	@Override

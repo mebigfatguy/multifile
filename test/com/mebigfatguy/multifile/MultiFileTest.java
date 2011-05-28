@@ -41,7 +41,9 @@ public class MultiFileTest {
 		
 		OutputStream os = f.getWriteStream("stream1");
 		DataOutputStream dos = new DataOutputStream(os);
-		dos.writeUTF("Hello World");
+		for (int i = 0; i < 100; i++) {
+			dos.writeUTF("The quick brown fox jumps over the lazy dog");
+		}
 		dos.close();
 		
 		InputStream is = f.getReadStream("stream1");

@@ -97,4 +97,8 @@ public class DirectoryBlock implements Block {
 	public Long getStreamOffset(String streamName) {
 		return streamOffsets.get(streamName);
 	}
+	
+	public String toString() {
+		return "DirectoryBlock[OFFSET: " + offset + " SIZE: " + header.getSize() + " NEXT: " + header.getNextBlock() + "]";
+	}
 }
