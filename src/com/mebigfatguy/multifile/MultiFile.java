@@ -22,16 +22,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class MultiFile {
 	static final int BLOCKSIZE = 512;
 	
 	RandomAccessFile raFile;
-	Map<String, Long> fileOffsets = new HashMap<String, Long>();
+	List<DirectoryBlock> directoryBlocks = new ArrayList<DirectoryBlock>();
 	
 	public MultiFile(String path) throws IOException {
 		this(new File(path));
@@ -51,7 +52,11 @@ public class MultiFile {
 	}
 	
 	public Collection<String> getStreamNames() {
-		return Collections.unmodifiableSet(fileOffsets.keySet());
+		Set<String> streamNames = new TreeSet<String>();
+		for (DirectoryBlock block : directoryBlocks) {
+			streamNames.addAll(block.getStreamNames());
+		}
+		return streamNames;
 	}
 	
 	public InputStream getReadStream(String streamName) throws IOException {
@@ -59,25 +64,45 @@ public class MultiFile {
 	}
 	
 	public OutputStream getWriteStream(String streamName) throws IOException {
-		{
-			Long offset = fileOffsets.get(streamName);
-			if (offset != null) {
-				deleteStream(streamName);
-			}
-		}
 		
 		long offset = createStream(streamName);
 		return new MFOutputStream(raFile, offset);
 	}
 	
 	public void deleteStream(String streamName) throws IOException {
-		fileOffsets.remove(streamName);
+		for (DirectoryBlock block : directoryBlocks) {
+			if (block.removeStream(streamName)) {
+				block.write(raFile);
+				break;
+			}
+		}
 	}
 	
 	private long createStream(String streamName) throws IOException {
-		long pos = raFile.length();
-		fileOffsets.put(streamName, pos);
-		return pos;
+		for (DirectoryBlock block : directoryBlocks) {
+			Long offset = block.getStreamOffset(streamName);
+			if (offset != null) {
+				block.removeStream(streamName);
+			}
+		}
+		
+		long offset = raFile.length();
+		for (DirectoryBlock block : directoryBlocks) {
+			if (block.addStream(streamName, offset)) {
+				block.write(raFile);
+				return offset;
+			}
+		}
+		
+		DirectoryBlock newBlock = new DirectoryBlock(offset);
+		newBlock.addStream(streamName, offset);
+		newBlock.write(raFile);
+		DirectoryBlock lastBlock = directoryBlocks.get(directoryBlocks.size() - 1);
+		lastBlock.setNextOffset(offset);
+		lastBlock.write(raFile);
+		directoryBlocks.add(newBlock);
+		
+		return offset;
 	}
 	
 	protected void finalize() throws Throwable {
@@ -90,34 +115,22 @@ public class MultiFile {
 	}
 	
 	void readDirectory() throws IOException {
-		raFile.seek(0);
-		BlockHeader header = new BlockHeader();
-		header.read(raFile);
-		while (header != null) {
-			int size = header.getSize();
-			while (size > 0) {
-				long startFP = raFile.getFilePointer();
-				String streamName = raFile.readUTF();
-				long offset = raFile.readLong();
-				fileOffsets.put(streamName, Long.valueOf(offset));
-				size -= raFile.getFilePointer() - startFP;
-			}
-			
-			long next = header.getNextBlock();
-			if (next > 0) {
-				raFile.seek(next);
-				header = new BlockHeader();
-				header.read(raFile);
-			} else {
-				header = null;
-			}
+		DirectoryBlock block = new DirectoryBlock(0);
+		block.read(raFile);
+		directoryBlocks.add(block);
+		
+		long nextOffset = block.getNextOffset();
+		while (nextOffset != 0) {
+			block = new DirectoryBlock(nextOffset);
+			block.read(raFile);
+			directoryBlocks.add(block);
+			nextOffset = block.getNextOffset();
 		}
 	}
 	
 	void writeEmptyDirectory() throws IOException {
-		BlockHeader bt = new BlockHeader(BlockType.DIRECTORY, 0, 0);
-		raFile.seek(0);
-		bt.write(raFile);
-		raFile.setLength(BLOCKSIZE);
+		DirectoryBlock block = new DirectoryBlock(0);
+		block.write(raFile);
+		directoryBlocks.add(block);
 	}
 }

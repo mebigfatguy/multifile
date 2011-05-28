@@ -47,9 +47,17 @@ class BlockHeader {
 	public int getSize() {
 		return size;
 	}
+	
+	public void setSize(int newSize) {
+		size = newSize;
+	}
 
 	public long getNextBlock() {
 		return nextBlock;
+	}
+	
+	public void setNextBlock(long offset) {
+		nextBlock = offset;
 	}
 	
 	public void read(RandomAccessFile raFile) throws IOException {

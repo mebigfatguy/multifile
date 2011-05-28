@@ -21,6 +21,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,6 +44,10 @@ public class DirectoryBlock {
 			raFile.writeUTF(entry.getKey());
 			raFile.writeLong(entry.getValue().longValue());
 		}
+		
+		if (raFile.getFilePointer() == raFile.length()) {
+			raFile.setLength(((offset + MultiFile.BLOCKSIZE) / MultiFile.BLOCKSIZE) * MultiFile.BLOCKSIZE);
+		}
 	}
 	
 	public void read(RandomAccessFile raFile) throws IOException {
@@ -57,14 +63,26 @@ public class DirectoryBlock {
 		}
 	}
 	
-	public boolean addStream(RandomAccessFile raFile, String streamName, long streamOffset) throws IOException {
+	public long getNextOffset() {
+		return header.getNextBlock();
+	}
+	public void setNextOffset(long offset) {
+		header.setNextBlock(offset);
+	}
+	public Collection<String> getStreamNames() {
+		return Collections.unmodifiableSet(streamOffsets.keySet());
+	}
+	
+	public boolean addStream(String streamName, long streamOffset) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(baos);
 		dos.writeUTF(streamName);
 		dos.writeLong(streamOffset);
 		dos.flush();
-		int length = baos.toByteArray().length;
-		if (length < MultiFile.BLOCKSIZE - BlockHeader.BLOCKHEADERSIZE) {
+		int streamEntryLength = baos.toByteArray().length;
+		int newBlockLength = header.getSize() + streamEntryLength;
+		if (newBlockLength < MultiFile.BLOCKSIZE - BlockHeader.BLOCKHEADERSIZE) {
+			header.setSize(newBlockLength);
 			streamOffsets.put(streamName, Long.valueOf(streamOffset));
 			return true;
 		}
@@ -72,11 +90,11 @@ public class DirectoryBlock {
 		return false;
 	}
 	
-	public void removeStream(String streamName) {
-		streamOffsets.remove(streamName);
+	public boolean removeStream(String streamName) {
+		return streamOffsets.remove(streamName) != null;
 	}
 	
-	public long getStreamOffset(String streamName) {
-		return streamOffsets.get(streamName).longValue();
+	public Long getStreamOffset(String streamName) {
+		return streamOffsets.get(streamName);
 	}
 }
