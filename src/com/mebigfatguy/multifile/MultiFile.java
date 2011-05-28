@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MultiFile {
-	private static final int BLOCKSIZE = 512;
+	static final int BLOCKSIZE = 512;
 	
 	private File parentFile;
 	RandomAccessFile raFile;
@@ -69,14 +69,17 @@ public class MultiFile {
 		}
 		
 		long offset = createStream(streamName);
-		return new MFOutputStream(offset);
+		return new MFOutputStream(raFile, offset);
 	}
 	
-	public void deleteStream(String streamName) throws IOException {	
+	public void deleteStream(String streamName) throws IOException {
+		fileOffsets.remove(streamName);
 	}
 	
 	private long createStream(String streamName) throws IOException {
-		throw new UnsupportedOperationException();
+		long pos = raFile.length();
+		fileOffsets.put(streamName, pos);
+		return pos;
 	}
 	
 	protected void finalize() throws Throwable {
@@ -96,7 +99,7 @@ public class MultiFile {
 			while (size > 0) {
 				long startFP = raFile.getFilePointer();
 				String streamName = raFile.readUTF();
-				Long offset = raFile.readLong();
+				long offset = raFile.readLong();
 				fileOffsets.put(streamName, Long.valueOf(offset));
 				size -= raFile.getFilePointer() - startFP;
 			}

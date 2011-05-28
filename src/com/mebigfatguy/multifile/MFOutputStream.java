@@ -19,13 +19,27 @@ package com.mebigfatguy.multifile;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 
 class MFOutputStream extends OutputStream {
 
-	private long offset;
+	private RandomAccessFile raFile;
+	private long startOffset;
+	private long currentPageOffset;
+	private long currentOffset;
 	
-	public MFOutputStream(long startOffset) {
-		offset = startOffset;
+	public MFOutputStream(RandomAccessFile file, long offset) throws IOException {
+		raFile = file;
+		startOffset = offset;
+		currentPageOffset = offset;
+		raFile.seek(startOffset);
+		currentOffset = startOffset;
+		BlockHeader header = new BlockHeader(raFile, BlockType.FILE, 0, 0);
+		header.writeBlock();
+		currentOffset = raFile.getFilePointer();
+		if (currentOffset == raFile.length()) {
+			raFile.setLength(startOffset + MultiFile.BLOCKSIZE);
+		}
 	}
 	
 	@Override
@@ -40,16 +54,21 @@ class MFOutputStream extends OutputStream {
 
 	@Override
 	public void write(byte[] b, int off, int len) throws IOException {
-		throw new UnsupportedOperationException();
+		long endBlock = ((currentOffset + MultiFile.BLOCKSIZE) / MultiFile.BLOCKSIZE) * MultiFile.BLOCKSIZE;
+		int length = (int) (endBlock - currentOffset);
+		
+		int writeLen = Math.min(length, len);
+		raFile.seek(currentOffset);
+		raFile.write(b, off, writeLen);
+		len -= writeLen;
+		currentOffset += writeLen;
 	}
 
 	@Override
 	public void flush() throws IOException {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void close() throws IOException {
-		throw new UnsupportedOperationException();
 	}
 }
