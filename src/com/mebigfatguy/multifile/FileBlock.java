@@ -26,26 +26,26 @@ public class FileBlock implements Block {
 	private static final int DATASIZE = MultiFile.BLOCKSIZE - BlockHeader.BLOCKHEADERSIZE;
 	
 	BlockHeader header;
-	long offset;
+	long startOffset;
 	
 	public FileBlock(long blockOffset) {
 		header = new BlockHeader(BlockType.FILE, 0, 0);
-		offset = blockOffset;
+		startOffset = blockOffset;
 	}
 	
 	@Override
 	public void write(RandomAccessFile raFile) throws IOException {
-		raFile.seek(offset);
+		raFile.seek(startOffset);
 		header.write(raFile);
 		
 		if (raFile.getFilePointer() == raFile.length()) {
-			raFile.setLength(offset + MultiFile.BLOCKSIZE);
+			raFile.setLength(startOffset + MultiFile.BLOCKSIZE);
 		}
 	}
 
 	@Override
 	public void read(RandomAccessFile raFile) throws IOException {
-		raFile.seek(offset);
+		raFile.seek(startOffset);
 		header = new BlockHeader();
 		header.read(raFile);
 	}
@@ -61,7 +61,7 @@ public class FileBlock implements Block {
 	}
 	
 	public void readStream(RandomAccessFile raFile, byte[] data) throws IOException {
-		raFile.seek(offset + BlockHeader.BLOCKHEADERSIZE);
+		raFile.seek(startOffset + BlockHeader.BLOCKHEADERSIZE);
 		int readLen = Math.min(data.length, header.getSize());
 		raFile.read(data, 0, readLen);
 	}
@@ -76,10 +76,10 @@ public class FileBlock implements Block {
 			header.setSize(growSize);
 		}
 		
-		raFile.seek(offset);
+		raFile.seek(startOffset);
 		header.write(raFile);
 		int writeSize = Math.min(DATASIZE - oldSize, length);
-		raFile.seek(offset + oldSize);
+		raFile.seek(startOffset + BlockHeader.BLOCKHEADERSIZE + oldSize);
 		raFile.write(data, offset, writeSize);
 		
 		if (raFile.getFilePointer() == raFile.length()) {
@@ -89,6 +89,6 @@ public class FileBlock implements Block {
 	}
 	
 	public String toString() {
-		return "FileBlock[OFFSET: " + offset + " SIZE: " + header.getSize() + " NEXT: " + header.getNextBlock() + "]";
+		return "FileBlock[OFFSET: " + startOffset + " SIZE: " + header.getSize() + " NEXT: " + header.getNextBlock() + "]";
 	}
 }
