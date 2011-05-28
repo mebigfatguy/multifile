@@ -61,10 +61,22 @@ public class MultiFile {
 	}
 	
 	public OutputStream getWriteStream(String streamName) throws IOException {
-		return null;
+		{
+			Long offset = fileOffsets.get(streamName);
+			if (offset != null) {
+				deleteStream(streamName);
+			}
+		}
+		
+		long offset = createStream(streamName);
+		return new MFOutputStream(offset);
 	}
 	
-	public void deleteSteram(String streamName) throws IOException {	
+	public void deleteStream(String streamName) throws IOException {	
+	}
+	
+	private long createStream(String streamName) throws IOException {
+		throw new UnsupportedOperationException();
 	}
 	
 	protected void finalize() throws Throwable {

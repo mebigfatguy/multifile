@@ -22,6 +22,12 @@ import java.io.OutputStream;
 
 class MFOutputStream extends OutputStream {
 
+	private long offset;
+	
+	public MFOutputStream(long startOffset) {
+		offset = startOffset;
+	}
+	
 	@Override
 	public void write(int b) throws IOException {
 		throw new UnsupportedOperationException();
