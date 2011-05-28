@@ -1,0 +1,1 @@
+MultiFile is an api for creating a file that contains multiple streams that can be read in an interleaved (but not multithreaded way).
