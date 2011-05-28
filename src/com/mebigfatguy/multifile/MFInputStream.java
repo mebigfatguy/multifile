@@ -19,52 +19,81 @@ package com.mebigfatguy.multifile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 
 class MFInputStream extends InputStream {
 
+	RandomAccessFile raFile;
+	long startOffset;
+	long currentOffset;
+	long mark;
+	
+	public MFInputStream(RandomAccessFile file, long offset) {
+		raFile = file;
+		startOffset = offset;
+		currentOffset = offset;
+		mark = 0;
+	}
+	
 	@Override
-	public int read() throws IOException {
-		throw new UnsupportedOperationException();
+	public int read() throws IOException {	
+		byte[] data = new byte[1];	
+		return read(data, 0, 1);
 	}
 
 	@Override
 	public int read(byte[] b) throws IOException {
-		throw new UnsupportedOperationException();
+		return read(b, 0, b.length);
 	}
 
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
+		if (raFile == null) {
+			throw new IOException("Stream already closed");
+		}
+		
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public long skip(long n) throws IOException {
+		if (raFile == null) {
+			throw new IOException("Stream already closed");
+		}
+		
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public int available() throws IOException {
+		if (raFile == null) {
+			throw new IOException("Stream already closed");
+		}
+		
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void close() throws IOException {
-		throw new UnsupportedOperationException();
+		raFile = null;
 	}
 
 	@Override
 	public synchronized void mark(int readlimit) {
-		throw new UnsupportedOperationException();
+		mark = currentOffset;
 	}
 
 	@Override
 	public synchronized void reset() throws IOException {
-		throw new UnsupportedOperationException();
+		if (mark == 0) {
+			throw new IOException("Mark never set");
+		}
+		
+		currentOffset = mark;
 	}
 
 	@Override
 	public boolean markSupported() {
-		throw new UnsupportedOperationException();
+		return true;
 	}
-	
 }

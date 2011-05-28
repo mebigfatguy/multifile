@@ -18,6 +18,7 @@
 package com.mebigfatguy.multifile;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -60,7 +61,14 @@ public class MultiFile {
 	}
 	
 	public InputStream getReadStream(String streamName) throws IOException {
-		return null;
+		for (DirectoryBlock block : directoryBlocks) {
+			Long offset = block.getStreamOffset(streamName);
+			if (offset != null) {
+				return new MFInputStream(raFile, offset.longValue());
+			}
+		}
+		
+		throw new FileNotFoundException("Failed to find stream " + streamName);
 	}
 	
 	public OutputStream getWriteStream(String streamName) throws IOException {
