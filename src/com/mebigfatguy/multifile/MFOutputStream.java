@@ -44,16 +44,28 @@ class MFOutputStream extends OutputStream {
 	
 	@Override
 	public void write(int b) throws IOException {
+		if (raFile == null) {
+			throw new IOException("Stream already closed");
+		}
+		
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void write(byte[] b) throws IOException {
+		if (raFile == null) {
+			throw new IOException("Stream already closed");
+		}
+		
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void write(byte[] b, int off, int len) throws IOException {
+		if (raFile == null) {
+			throw new IOException("Stream already closed");
+		}
+		
 		long endBlock = ((currentOffset + MultiFile.BLOCKSIZE) / MultiFile.BLOCKSIZE) * MultiFile.BLOCKSIZE;
 		int length = (int) (endBlock - currentOffset);
 		
@@ -70,5 +82,6 @@ class MFOutputStream extends OutputStream {
 
 	@Override
 	public void close() throws IOException {
+		raFile = null;
 	}
 }
