@@ -28,7 +28,7 @@ class BlockHeader {
 	
 	public BlockHeader(RandomAccessFile file) throws IOException {
 		raFile = file;
-		int blockType = raFile.read();
+		int blockType = raFile.readShort();
 		type = BlockType.values()[blockType];
 		size = raFile.readInt();
 		nextBlock = raFile.readLong();
@@ -54,7 +54,7 @@ class BlockHeader {
 	}
 	
 	public void writeBlock() throws IOException {
-		raFile.writeInt(type.ordinal());
+		raFile.writeShort(type.ordinal());
 		raFile.writeInt(size);
 		raFile.writeLong(nextBlock);
 	}
