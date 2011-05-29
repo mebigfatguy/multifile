@@ -36,7 +36,11 @@ class MFInputStream extends InputStream {
 	@Override
 	public int read() throws IOException {	
 		byte[] data = new byte[1];	
-		return read(data, 0, 1);
+		int len = read(data, 0, 1);
+		if (len == 0)
+			return -1;
+		
+		return data[0] & 0x00FF;
 	}
 
 	@Override
