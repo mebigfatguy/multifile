@@ -2,6 +2,7 @@ package com.mebigfatguy.multifile;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,6 +51,13 @@ public class MultiFileTest {
 		DataInputStream dis = new DataInputStream(is);
 		for (int i = 0; i < 100; i++) {
 			Assert.assertEquals("The quick brown fox jumps over the lazy dog", dis.readUTF());
+		}
+		
+		try {
+			dis.readUTF();
+			Assert.assertTrue(false);
+		} catch (EOFException e) {
+			Assert.assertTrue(true);
 		}
 		dis.close();
 		f.close();
