@@ -34,6 +34,7 @@ public class MultiFile {
 	
 	RandomAccessFile raFile;
 	List<DirectoryBlock> directoryBlocks = new ArrayList<DirectoryBlock>();
+	List<FreeBlock> freeBlocks = new ArrayList<FreeBlock>();
 	
 	public MultiFile(String path) throws IOException {
 		this(new File(path));
@@ -56,6 +57,7 @@ public class MultiFile {
 		raFile.close();
 		raFile = null;
 		directoryBlocks = null;
+		freeBlocks = null;
 	}
 	
 	public Collection<String> getStreamNames() throws IOException {
@@ -103,8 +105,22 @@ public class MultiFile {
 			Long offset = block.removeStream(streamName);
 			if (offset != null) {
 				block.write(raFile);
+				
+				FileBlock file = new FileBlock(offset.longValue());
+				file.read(raFile);
 				FreeBlock free = new FreeBlock(offset.longValue());
 				free.write(raFile);
+				freeBlocks.add(free);
+				
+				long next = file.getNextOffset();
+				while (next != 0) {
+					file = new FileBlock(next);
+					file.read(raFile);
+					free = new FreeBlock(next);
+					free.write(raFile);
+					freeBlocks.add(free);
+					next = file.getNextOffset();
+				}
 				break;
 			}
 		}
@@ -115,12 +131,7 @@ public class MultiFile {
 			throw new IOException("MultiFile closed");
 		}
 		
-		for (DirectoryBlock block : directoryBlocks) {
-			Long offset = block.getStreamOffset(streamName);
-			if (offset != null) {
-				block.removeStream(streamName);
-			}
-		}
+		deleteStream(streamName);
 		
 		long offset = raFile.length();
 		for (DirectoryBlock block : directoryBlocks) {

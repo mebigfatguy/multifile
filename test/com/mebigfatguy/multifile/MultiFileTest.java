@@ -76,7 +76,9 @@ public class MultiFileTest {
 		
 		os = f.getWriteStream("stream2");
 		dos = new DataOutputStream(os);
-		dos.writeUTF("Madam, I am Adam");
+		for (int i = 0; i < 100; i++) {
+			dos.writeUTF("Madam, I am Adam");
+		}
 		dos.flush();
 		dos.close();
 		
