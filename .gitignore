@@ -1,5 +1,9 @@
 
+*.jar
 *.class
 *.mff
 
 .settings
+lib
+reports
+
