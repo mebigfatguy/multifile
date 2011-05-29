@@ -49,10 +49,19 @@ public class MultiFile {
 	}
 	
 	public void close() throws IOException {
+		if (raFile == null) {
+			throw new IOException("MultiFile already closed");
+		}
+		
 		raFile.close();
+		raFile = null;
 	}
 	
-	public Collection<String> getStreamNames() {
+	public Collection<String> getStreamNames() throws IOException {
+		if (raFile == null) {
+			throw new IOException("MultiFile closed");
+		}
+		
 		Set<String> streamNames = new TreeSet<String>();
 		for (DirectoryBlock block : directoryBlocks) {
 			streamNames.addAll(block.getStreamNames());
@@ -61,6 +70,10 @@ public class MultiFile {
 	}
 	
 	public InputStream getReadStream(String streamName) throws IOException {
+		if (raFile == null) {
+			throw new IOException("MultiFile closed");
+		}
+		
 		for (DirectoryBlock block : directoryBlocks) {
 			Long offset = block.getStreamOffset(streamName);
 			if (offset != null) {
@@ -72,12 +85,19 @@ public class MultiFile {
 	}
 	
 	public OutputStream getWriteStream(String streamName) throws IOException {
+		if (raFile == null) {
+			throw new IOException("MultiFile closed");
+		}
 		
 		long offset = createStream(streamName);
 		return new MFOutputStream(raFile, offset);
 	}
 	
 	public void deleteStream(String streamName) throws IOException {
+		if (raFile == null) {
+			throw new IOException("MultiFile closed");
+		}
+		
 		for (DirectoryBlock block : directoryBlocks) {
 			if (block.removeStream(streamName)) {
 				block.write(raFile);
@@ -87,6 +107,10 @@ public class MultiFile {
 	}
 	
 	private long createStream(String streamName) throws IOException {
+		if (raFile == null) {
+			throw new IOException("MultiFile closed");
+		}
+		
 		for (DirectoryBlock block : directoryBlocks) {
 			Long offset = block.getStreamOffset(streamName);
 			if (offset != null) {
@@ -123,6 +147,10 @@ public class MultiFile {
 	}
 	
 	void readDirectory() throws IOException {
+		if (raFile == null) {
+			throw new IOException("MultiFile closed");
+		}
+		
 		DirectoryBlock block = new DirectoryBlock(0);
 		block.read(raFile);
 		directoryBlocks.add(block);
@@ -137,6 +165,10 @@ public class MultiFile {
 	}
 	
 	void writeEmptyDirectory() throws IOException {
+		if (raFile == null) {
+			throw new IOException("MultiFile closed");
+		}
+		
 		DirectoryBlock block = new DirectoryBlock(0);
 		block.write(raFile);
 		directoryBlocks.add(block);
