@@ -17,6 +17,7 @@
  */
 package com.mebigfatguy.multifile;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -29,7 +30,7 @@ class MFInputStream extends InputStream {
 	
 	public MFInputStream(RandomAccessFile file, long offset) {
 		raFile = file;
-		currentOffset = offset;
+		currentOffset = offset + BlockHeader.BLOCKHEADERSIZE;
 		mark = 0;
 	}
 	
@@ -54,15 +55,29 @@ class MFInputStream extends InputStream {
 			throw new IOException("Stream already closed");
 		}
 		
+		if (currentOffset == 0) {
+			throw new EOFException("End of file reached");
+		}
+		
 		long currentBlockOffset = (currentOffset / MultiFile.BLOCKSIZE) * MultiFile.BLOCKSIZE;
 		FileBlock block = new FileBlock(currentBlockOffset);
 		block.read(raFile);
 		
-		int availableInBlock = (int)(block.getSize() - (currentOffset - currentBlockOffset));
+		int availableInBlock = (int)(block.getSize() - (currentOffset - currentBlockOffset - BlockHeader.BLOCKHEADERSIZE));
 		int readLen = Math.min(len, availableInBlock);
 		
+		raFile.seek(currentOffset);
 		raFile.read(b, off, readLen);
 		currentOffset += readLen;
+		
+		if (currentOffset == (currentBlockOffset + MultiFile.BLOCKSIZE)) {
+			long next = block.getNextOffset();
+			if (next == 0) {
+				currentOffset = 0;
+			} else {
+				currentOffset = block.getNextOffset() + MultiFile.BLOCKSIZE;
+			}
+		}
 		return readLen;
 	}
 
