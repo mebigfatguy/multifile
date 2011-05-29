@@ -48,7 +48,7 @@ public class MultiFileTest {
 		
 		InputStream is = f.getReadStream("stream1");
 		DataInputStream dis = new DataInputStream(is);
-		Assert.assertEquals("Hello World", dis.readUTF());
+		Assert.assertEquals("The quick brown fox jumps over the lazy dog", dis.readUTF());
 		dis.close();
 		f.close();
 	}

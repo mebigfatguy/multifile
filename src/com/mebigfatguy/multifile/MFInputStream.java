@@ -24,13 +24,11 @@ import java.io.RandomAccessFile;
 class MFInputStream extends InputStream {
 
 	RandomAccessFile raFile;
-	long startOffset;
 	long currentOffset;
 	long mark;
 	
 	public MFInputStream(RandomAccessFile file, long offset) {
 		raFile = file;
-		startOffset = offset;
 		currentOffset = offset;
 		mark = 0;
 	}
@@ -52,7 +50,16 @@ class MFInputStream extends InputStream {
 			throw new IOException("Stream already closed");
 		}
 		
-		throw new UnsupportedOperationException();
+		long currentBlockOffset = (currentOffset / MultiFile.BLOCKSIZE) * MultiFile.BLOCKSIZE;
+		FileBlock block = new FileBlock(currentBlockOffset);
+		block.read(raFile);
+		
+		int availableInBlock = (int)(block.getSize() - (currentOffset - currentBlockOffset));
+		int readLen = Math.min(len, availableInBlock);
+		
+		raFile.read(b, off, readLen);
+		currentOffset += readLen;
+		return readLen;
 	}
 
 	@Override

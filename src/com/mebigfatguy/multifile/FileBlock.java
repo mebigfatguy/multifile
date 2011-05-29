@@ -50,6 +50,10 @@ public class FileBlock implements Block {
 		header.read(raFile);
 	}
 
+	public int getSize() {
+		return header.getSize();
+	}
+	
 	@Override
 	public long getNextOffset() {
 		return header.getNextBlock();
@@ -58,12 +62,6 @@ public class FileBlock implements Block {
 	@Override
 	public void setNextOffset(long offset) {
 		header.setNextBlock(offset);
-	}
-	
-	public void readStream(RandomAccessFile raFile, byte[] data) throws IOException {
-		raFile.seek(startOffset + BlockHeader.BLOCKHEADERSIZE);
-		int readLen = Math.min(data.length, header.getSize());
-		raFile.read(data, 0, readLen);
 	}
 	
 	public int writeStream(RandomAccessFile raFile, byte[] data, int offset, int length) throws IOException {
