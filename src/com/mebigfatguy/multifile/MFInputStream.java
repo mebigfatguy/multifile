@@ -87,7 +87,28 @@ class MFInputStream extends InputStream {
 			throw new IOException("Stream already closed");
 		}
 		
-		throw new UnsupportedOperationException();
+		if (currentOffset == 0) {
+			throw new EOFException("End of file reached");
+		}
+		
+		long currentBlockOffset = (currentOffset / MultiFile.BLOCKSIZE) * MultiFile.BLOCKSIZE;
+		FileBlock block = new FileBlock(currentBlockOffset);
+		block.read(raFile);
+		
+		int availableInBlock = (int)(block.getSize() - (currentOffset - currentBlockOffset - BlockHeader.BLOCKHEADERSIZE));
+		if (n < availableInBlock) {
+			currentOffset += n;
+			return n;
+		} else {
+			long next = block.getNextOffset();
+			if (next != 0) {
+				currentOffset = next + BlockHeader.BLOCKHEADERSIZE;
+				return availableInBlock;
+			}
+			
+			currentOffset = 0;
+			return 0;
+		}
 	}
 
 	@Override
