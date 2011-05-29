@@ -62,4 +62,42 @@ public class MultiFileTest {
 		dis.close();
 		f.close();
 	}
+	
+	@Test
+	public void testDeleteStream() throws IOException {
+		MultiFile f = new MultiFile(TEST_FILE_NAME);
+		Assert.assertEquals(0, f.getStreamNames().size());
+		
+		OutputStream os = f.getWriteStream("stream1");
+		DataOutputStream dos = new DataOutputStream(os);
+		dos.writeUTF("The quick brown fox jumps over the lazy dog");
+		dos.flush();
+		dos.close();
+		
+		os = f.getWriteStream("stream2");
+		dos = new DataOutputStream(os);
+		dos.writeUTF("Madam, I am Adam");
+		dos.flush();
+		dos.close();
+		
+		Assert.assertEquals(2, f.getStreamNames().size());	
+		
+		f.deleteStream("stream1");
+		
+		Assert.assertEquals(1, f.getStreamNames().size());
+		
+		os = f.getWriteStream("stream3");
+		dos = new DataOutputStream(os);
+		dos.writeUTF("Colorless green ideas sleep furiously");
+		dos.flush();
+		dos.close();
+		
+		Assert.assertEquals(2, f.getStreamNames().size());
+		
+		f.deleteStream("stream2");
+		f.deleteStream("stream3");
+		
+		Assert.assertEquals(0, f.getStreamNames().size());
+		f.close();
+	}
 }

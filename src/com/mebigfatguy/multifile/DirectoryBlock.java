@@ -90,8 +90,13 @@ public class DirectoryBlock implements Block {
 		return false;
 	}
 	
-	public boolean removeStream(String streamName) {
-		return streamOffsets.remove(streamName) != null;
+	public Long removeStream(String streamName) {
+		Long offset = streamOffsets.get(streamName);
+		if (offset != null) {
+			streamOffsets.remove(streamName);
+		}
+		
+		return offset;
 	}
 	
 	public Long getStreamOffset(String streamName) {

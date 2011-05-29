@@ -55,6 +55,7 @@ public class MultiFile {
 		
 		raFile.close();
 		raFile = null;
+		directoryBlocks = null;
 	}
 	
 	public Collection<String> getStreamNames() throws IOException {
@@ -99,8 +100,11 @@ public class MultiFile {
 		}
 		
 		for (DirectoryBlock block : directoryBlocks) {
-			if (block.removeStream(streamName)) {
+			Long offset = block.removeStream(streamName);
+			if (offset != null) {
 				block.write(raFile);
+				FreeBlock free = new FreeBlock(offset.longValue());
+				free.write(raFile);
 				break;
 			}
 		}
