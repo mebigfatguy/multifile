@@ -66,10 +66,10 @@ class MFOutputStream extends OutputStream {
 		len -= writeLen;
 		
 		while (len > 0) {
-			currentBlockOffset = raFile.getFilePointer();
+			currentBlockOffset = raFile.length();
 			block.setNextOffset(currentBlockOffset);
 			block.write(raFile);
-			FileBlock newBlock = new FileBlock(raFile.getFilePointer());
+			FileBlock newBlock = new FileBlock(currentBlockOffset);
 			writeLen = newBlock.writeStream(raFile, b, off, len);
 			off += writeLen;
 			len -= writeLen;

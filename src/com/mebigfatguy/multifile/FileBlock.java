@@ -81,7 +81,7 @@ public class FileBlock implements Block {
 		raFile.write(data, offset, writeSize);
 		
 		if (raFile.getFilePointer() == raFile.length()) {
-			raFile.setLength(offset + MultiFile.BLOCKSIZE);
+			raFile.setLength(startOffset + MultiFile.BLOCKSIZE);
 		}
 		return writeSize;
 	}
