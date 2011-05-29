@@ -1,0 +1,109 @@
+<!--
+/*
+ * multifile - A single file store of multiple streams
+ * Copyright 2011 MeBigFatGuy.com
+ * Copyright 2011 Dave Brosius
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * 
+ *    http://www.apache.org/licenses/LICENSE-2.0 
+ *    
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+ * See the License for the specific language governing permissions and limitations 
+ * under the License. 
+ */
+ -->
+
+<project name="multifile" default="jar">
+	
+	<property file="build.properties"/>
+	
+	<property name="src.dir" value="${basedir}/src"/>
+	<property name="test.dir" value="${basedir}/test"/>
+	<property name="classes.dir" value="${basedir}/classes"/>
+	<property name="lib.dir" value="${basedir}/lib"/>
+	<property name="test.classes.dir" value="${basedir}/testclasses"/>
+	<property name="reports.dir" value="${basedir}/reports"/>
+	<property name="javac.source" value="1.6"/>
+	<property name="javac.target" value="1.6"/>
+	<property name="javac.deprecation" value="on"/>
+	<property name="javac.debug" value="on"/>
+	
+	<property name="multifile.version" value="0.1.0"/>
+	
+	<target name="clean" description="removes all generated collateral">
+		<delete dir="${classes.dir}"/>
+		<delete dir="${test.classes.dir}"/>
+		<delete dir="${reports.dir}"/>
+		<delete dir="${basedir}/*.jar"/>
+	</target>
+	
+    <property name="junit.url" value="http://repo1.maven.org/maven2/junit/junit/4.4/junit-4.4.jar"/> 
+    <target name="junit_check">
+	    <available file="${lib.dir}/junit.jar" property="junit.exists"/>
+	</target>
+	<target name="install_junit" depends="junit_check" unless="junit.exists" description="installs junit.jar into derby">
+	    <mkdir dir="${lib.dir}" />
+		<get src="${junit.url}" dest="${lib.dir}/junit.jar" verbose="true" ignoreerrors="true"/>
+	</target>
+	
+	<target name="-init" description="prepares repository for a build">
+		<antcall target="install_junit"/>
+		<mkdir dir="${classes.dir}"/>
+		<mkdir dir="${test.classes.dir}"/>
+		<mkdir dir="${reports.dir}"/>
+	</target>
+		
+	<target name="compile" depends="-init" description="compiles java files">
+		<javac srcdir="${src.dir}"
+				destdir="${classes.dir}"
+				source="${javac.source}"
+				target="${javac.target}"
+				deprecation="${javac.deprecation}"
+				debug="${javac.debug}"
+			    includeantruntime="false"/>
+	</target>
+	
+	<target name="test" depends="compile" description="run junit tests">
+		<junit printsummary="yes" haltonfailure="yes">
+		  <classpath>
+		    <pathelement location="${test.classes.dir}"/>
+		    <pathelement location="${classes.dir}"/>
+		  	<pathelement location="${lib.dir}/junit.jar"/>
+		  </classpath>
+
+		  <formatter type="plain"/>
+
+		  <batchtest fork="yes" todir="${reports.dir}">
+		    <fileset dir="${test.dir}">
+		      <include name="**/*Test*.java"/>
+		    </fileset>
+		  </batchtest>
+		</junit>
+	</target>
+		
+	<target name="jar" depends="compile" description="produces the multifile jar file">
+		<jar destfile="${basedir}/multifile-${multifile.version}.jar">
+			<fileset dir="${classes.dir}">
+				<include name="**/*.class"/>
+			</fileset>
+			<manifest>
+				<attribute name="multifile-version" value="${multifile.version}"/>
+			</manifest>
+		</jar>	
+	</target>
+	
+	<target name="srczip" description="builds the source distribution zip file">
+		<zip destfile="${basedir}/multifile-src-${multifile.version}.zip" 
+			 basedir="${basedir}"
+			 includes="src/**/*.java"/>
+	</target>
+	
+	<target name="build" depends="clean, -init, compile, jar" description="builds the multifile jar"/>
+	
+	<target name="release" depends="build, srczip" description="prepares everything for a release"/>
+</project>
