@@ -44,6 +44,7 @@ public class MultiFile {
 		raFile = new RandomAccessFile(file, "rw");
 		if (raFile.length() > 0) {
 			readDirectory();
+			readFreeBlocks();
 		} else {
 			writeEmptyDirectory();
 		}
@@ -183,6 +184,26 @@ public class MultiFile {
 			block.read(raFile);
 			directoryBlocks.add(block);
 			nextOffset = block.getNextOffset();
+		}
+	}
+	
+	void readFreeBlocks() throws IOException {
+		if (raFile == null) {
+			throw new IOException("MultiFile closed");
+		}
+		
+		long length = raFile.length();
+		
+		long offset = BLOCKSIZE;
+		
+		BlockHeader header = new BlockHeader();
+		while (offset < length) {
+			raFile.seek(offset);
+			header.read(raFile);
+			if (header.getBlockType() == BlockType.FREE) {
+				freeBlocks.add(new FreeBlock(offset));
+			}
+			offset += BLOCKSIZE;
 		}
 	}
 	

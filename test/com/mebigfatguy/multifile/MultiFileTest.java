@@ -97,9 +97,18 @@ public class MultiFileTest {
 		Assert.assertEquals(2, f.getStreamNames().size());
 		
 		f.deleteStream("stream2");
-		f.deleteStream("stream3");
 		
-		Assert.assertEquals(0, f.getStreamNames().size());
+		Assert.assertEquals(1, f.getStreamNames().size());
+		f.close();
+		
+		f = new MultiFile(TEST_FILE_NAME);
+		os = f.getWriteStream("stream4");
+		dos = new DataOutputStream(os);
+		dos.writeUTF("Yo Dog!");
+		dos.flush();
+		dos.close();
+		
+		Assert.assertEquals(2, f.getStreamNames().size());
 		f.close();
 	}
 }
