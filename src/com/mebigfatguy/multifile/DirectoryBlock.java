@@ -37,12 +37,18 @@ public class DirectoryBlock extends AbstractBlock {
 	}
 	
 	public void write(RandomAccessFile raFile) throws IOException {
-		raFile.seek(offset);
-		header.write(raFile);
+		
+		long startOffset = offset + BlockHeader.BLOCKHEADERSIZE;
+		raFile.seek(startOffset);
 		for (Map.Entry<String, Long> entry : streamOffsets.entrySet()) {
 			raFile.writeUTF(entry.getKey());
 			raFile.writeLong(entry.getValue().longValue());
 		}
+		int size = (int)(raFile.getFilePointer() - startOffset); 
+		
+		raFile.seek(offset);
+		header.setSize(size);
+		header.write(raFile);
 		
 		if (raFile.getFilePointer() == raFile.length()) {
 			raFile.setLength(((offset + MultiFile.BLOCKSIZE) / MultiFile.BLOCKSIZE) * MultiFile.BLOCKSIZE);
