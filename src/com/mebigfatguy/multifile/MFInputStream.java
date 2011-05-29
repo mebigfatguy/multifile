@@ -71,7 +71,7 @@ class MFInputStream extends InputStream {
 		currentOffset += readLen;
 		
 		if (currentOffset == (currentBlockOffset + MultiFile.BLOCKSIZE)) {
-			long next = block.getNextOffset();
+			long next = block.getHeader().getNextBlock();
 			if (next == 0) {
 				currentOffset = 0;
 			} else {
@@ -100,7 +100,7 @@ class MFInputStream extends InputStream {
 			currentOffset += n;
 			return n;
 		} else {
-			long next = block.getNextOffset();
+			long next = block.getHeader().getNextBlock();
 			if (next != 0) {
 				currentOffset = next + BlockHeader.BLOCKHEADERSIZE;
 				return availableInBlock;

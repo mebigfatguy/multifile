@@ -21,15 +21,14 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Map;
 
-public class FileBlock implements Block {
+public class FileBlock extends AbstractBlock {
 
 	private static final int DATASIZE = MultiFile.BLOCKSIZE - BlockHeader.BLOCKHEADERSIZE;
 	
-	BlockHeader header;
 	long startOffset;
 	
 	public FileBlock(long blockOffset) {
-		header = new BlockHeader(BlockType.FILE, 0, 0);
+		super(new BlockHeader(BlockType.FILE, 0, 0));
 		startOffset = blockOffset;
 	}
 	
@@ -52,16 +51,6 @@ public class FileBlock implements Block {
 
 	public int getSize() {
 		return header.getSize();
-	}
-	
-	@Override
-	public long getNextOffset() {
-		return header.getNextBlock();
-	}
-
-	@Override
-	public void setNextOffset(long offset) {
-		header.setNextBlock(offset);
 	}
 	
 	public int writeStream(RandomAccessFile raFile, byte[] data, int offset, int length) throws IOException {

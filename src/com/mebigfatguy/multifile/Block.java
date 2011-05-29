@@ -23,6 +23,5 @@ import java.io.RandomAccessFile;
 public interface Block {
 	void write(RandomAccessFile raFile) throws IOException;
 	void read(RandomAccessFile raFile) throws IOException;
-	long getNextOffset();
-	void setNextOffset(long offset);
+	BlockHeader getHeader();
 }

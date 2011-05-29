@@ -112,14 +112,14 @@ public class MultiFile {
 				free.write(raFile);
 				freeBlocks.add(free);
 				
-				long next = file.getNextOffset();
+				long next = file.getHeader().getNextBlock();
 				while (next != 0) {
 					file = new FileBlock(next);
 					file.read(raFile);
 					free = new FreeBlock(next);
 					free.write(raFile);
 					freeBlocks.add(free);
-					next = file.getNextOffset();
+					next = file.getHeader().getNextBlock();
 				}
 				break;
 			}
@@ -133,7 +133,14 @@ public class MultiFile {
 		
 		deleteStream(streamName);
 		
-		long offset = raFile.length();
+		FreeBlock free = (freeBlocks.size() == 0) ? null : freeBlocks.remove(freeBlocks.size() - 1);
+		long offset;
+		if (free != null) {
+			offset = free.getOffset();
+		} else {
+			offset = raFile.length();
+		}
+		
 		for (DirectoryBlock block : directoryBlocks) {
 			if (block.addStream(streamName, offset)) {
 				block.write(raFile);

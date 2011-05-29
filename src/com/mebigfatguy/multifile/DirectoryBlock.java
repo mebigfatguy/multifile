@@ -26,14 +26,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DirectoryBlock implements Block {
+public class DirectoryBlock extends AbstractBlock {
 
-	BlockHeader header;
 	long offset;
 	private Map<String, Long> streamOffsets = new HashMap<String, Long>();
 	
 	public DirectoryBlock(long blockOffset) {
-		header = new BlockHeader(BlockType.DIRECTORY, 0, 0);
+		super(new BlockHeader(BlockType.DIRECTORY, 0, 0));
 		offset = blockOffset;
 	}
 	

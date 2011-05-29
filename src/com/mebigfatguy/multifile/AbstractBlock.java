@@ -17,32 +17,16 @@
  */
 package com.mebigfatguy.multifile;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+public abstract class AbstractBlock implements Block {
 
-public class FreeBlock extends AbstractBlock {
+	BlockHeader header;
 	
-	long offset;
-	
-	public FreeBlock(long blockOffset) {
-		super(new BlockHeader(BlockType.FREE, 0, 0));
-		offset = blockOffset;
+	public AbstractBlock(BlockHeader blockHeader) {
+		header = blockHeader;
 	}
 	
 	@Override
-	public void write(RandomAccessFile raFile) throws IOException {
-		raFile.seek(offset);
-		header.write(raFile);
-	}
-
-	@Override
-	public void read(RandomAccessFile raFile) throws IOException {
-		raFile.seek(offset);
-		header = new BlockHeader();
-		header.read(raFile);
-	}
-	
-	public long getOffset() {
-		return offset;
+	public BlockHeader getHeader() {
+		return header;
 	}
 }
