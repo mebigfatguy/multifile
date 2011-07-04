@@ -169,7 +169,7 @@ public class MultiFile {
 		super.finalize();
 	}
 	
-	void readDirectory() throws IOException {
+	final void readDirectory() throws IOException {
 		if (raFile == null) {
 			throw new IOException("MultiFile closed");
 		}
@@ -187,7 +187,7 @@ public class MultiFile {
 		}
 	}
 	
-	void readFreeBlocks() throws IOException {
+	final void readFreeBlocks() throws IOException {
 		if (raFile == null) {
 			throw new IOException("MultiFile closed");
 		}
@@ -207,7 +207,7 @@ public class MultiFile {
 		}
 	}
 	
-	void writeEmptyDirectory() throws IOException {
+	final void writeEmptyDirectory() throws IOException {
 		if (raFile == null) {
 			throw new IOException("MultiFile closed");
 		}
