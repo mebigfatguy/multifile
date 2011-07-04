@@ -134,7 +134,7 @@ public class MultiFile {
 		
 		deleteStream(streamName);
 		
-		FreeBlock free = (freeBlocks.size() == 0) ? null : freeBlocks.remove(freeBlocks.size() - 1);
+		FreeBlock free = (freeBlocks.isEmpty()) ? null : freeBlocks.remove(freeBlocks.size() - 1);
 		long offset;
 		if (free != null) {
 			offset = free.getOffset();
