@@ -24,14 +24,12 @@ import java.io.RandomAccessFile;
 class MFOutputStream extends OutputStream {
 
 	private RandomAccessFile raFile;
-	private long startOffset;
 	private long currentBlockOffset;
 	
 	public MFOutputStream(RandomAccessFile file, long offset) throws IOException {
 		raFile = file;
-		startOffset = offset;
 		currentBlockOffset = offset;
-		FileBlock block = new FileBlock(startOffset);
+		FileBlock block = new FileBlock(offset);
 		block.write(raFile);
 	}
 	
