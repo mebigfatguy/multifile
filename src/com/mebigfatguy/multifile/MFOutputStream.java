@@ -77,10 +77,6 @@ class MFOutputStream extends OutputStream {
 	}
 
 	@Override
-	public void flush() throws IOException {
-	}
-
-	@Override
 	public void close() throws IOException {
 		raFile = null;
 	}
